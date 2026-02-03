@@ -287,9 +287,141 @@ Remove a prompt from the library.
 - **Empty search:** If query is empty, show usage hint
 - **No results:** Provide helpful suggestion to try different keywords
 
+### /prompt-book watch <start|stop|status>
+
+Enable or disable auto-capture mode, which reminds you to save prompts at session end.
+
+**State file:** `~/.claude/skills/prompt-book/data/.watch-enabled`
+
+**Flow:**
+
+**`/prompt-book watch start`**
+1. Create the state file `~/.claude/skills/prompt-book/data/.watch-enabled`
+2. Confirm: "Auto-capture enabled. I'll remind you to save effective prompts at the end of long sessions."
+
+**`/prompt-book watch stop`**
+1. Remove the state file if it exists
+2. Confirm: "Auto-capture disabled."
+
+**`/prompt-book watch status`**
+1. Check if state file exists
+2. Report: "Auto-capture is currently enabled/disabled."
+
+**Auto-capture behavior:**
+
+When auto-capture is enabled AND the conversation has been substantial (10+ exchanges), at the end of a task or when the user seems finished:
+
+1. Review the conversation for effective prompts the user gave
+2. Ask: "I noticed some prompts in this session that worked well. Would you like to save any of these?"
+3. List candidate prompts with brief descriptions
+4. If user confirms, use the standard save flow for each selected prompt
+
+**Important:** Never auto-save without explicit user confirmation. Always ask first.
+
+### /prompt-book export [file]
+
+Export all prompts to a JSON file.
+
+**Flow:**
+
+1. If no file specified, default to `~/.claude/skills/prompt-book/data/export-{YYYYMMDD}.json`
+
+2. Glob all `.md` files in `~/.claude/skills/prompt-book/data/prompts/`
+
+3. For each file:
+   - Read and parse frontmatter and content
+   - Extract: id, title, category, tags, rating, usage_count, created, last_used, prompt text, context, feedback
+
+4. Build JSON structure:
+```json
+{
+  "exported": "2026-02-03",
+  "version": "3.0.0",
+  "prompts": [
+    {
+      "id": "20260202-k7xm",
+      "title": "Code Review Request",
+      "category": "coding",
+      "tags": ["review", "quality"],
+      "rating": 4.2,
+      "usage_count": 12,
+      "created": "2026-02-02",
+      "last_used": "2026-02-02",
+      "prompt": "The actual prompt text...",
+      "context": "When to use this prompt...",
+      "feedback": [
+        {"date": "2026-02-02", "notes": "Worked great", "rating": 5}
+      ]
+    }
+  ]
+}
+```
+
+5. Write to the specified file
+
+6. Confirm: "Exported {N} prompts to {filepath}"
+
+### /prompt-book import <file>
+
+Import prompts from a JSON file.
+
+**Flow:**
+
+1. If no file provided, show usage: "Usage: /prompt-book import <file>"
+
+2. Read and parse the JSON file
+
+3. Validate the structure:
+   - Must have `prompts` array
+   - Each prompt must have at minimum: title, prompt text
+
+4. For each prompt in the array:
+   - Check if ID already exists in library
+   - If exists, ask: "Prompt '{title}' ({id}) already exists. Skip or overwrite?"
+   - If new, generate a new ID (don't reuse imported IDs to avoid conflicts)
+   - Create the markdown file
+
+5. Summary: "Imported {N} prompts. {M} skipped (already existed)."
+
+**Error handling:**
+- Invalid JSON → "Error: Could not parse JSON file"
+- Missing required fields → "Error: Prompt missing required field 'title' or 'prompt'"
+- File not found → "Error: File not found: {filepath}"
+
+## Git Sync Workflow
+
+The `data/` directory can be version-controlled with git for backup and sync across machines.
+
+**Initial setup:**
+```bash
+cd ~/.claude/skills/prompt-book/data
+git init
+git add .
+git commit -m "Initial prompt library"
+git remote add origin <your-repo-url>
+git push -u origin main
+```
+
+**Sync workflow:**
+```bash
+# Pull latest from another machine
+cd ~/.claude/skills/prompt-book/data
+git pull
+
+# After saving new prompts
+git add prompts/
+git commit -m "Add new prompts"
+git push
+```
+
+**Conflict resolution:**
+- Prompt files are independent, so conflicts are rare
+- If conflict occurs, prefer the version with higher usage_count or more recent last_used
+
 ## Notes
 
 - All searches are case-insensitive substring matches
-- Ratings start at 0 and are updated via feedback (Phase 2)
-- usage_count starts at 0 and is incremented when prompt is used (Phase 2)
+- Ratings start at 0 and are updated via feedback
+- usage_count starts at 0 and is incremented when prompt is used
 - The data/ directory can be version-controlled with git for backup and sync
+- Auto-capture requires explicit opt-in and always asks before saving
