@@ -1,90 +1,83 @@
 # Prompt Book
 
-A Claude Code skill for managing a personal library of effective prompts.
+A Claude Code skill for building your personal library of effective prompts. Save prompts that work, find them later, track what's useful.
 
-## Installation
+## Install
 
-This skill is installed at `~/.claude/skills/prompt-book/`. It should be automatically available in Claude Code.
+Clone into your Claude Code skills directory:
 
-## Commands
+```bash
+git clone https://github.com/23jmo/prompt-book.git ~/.claude/skills/prompt-book
+```
 
-| Command | Description |
-|---------|-------------|
-| `/prompt-book save` | Save a new prompt to your library |
-| `/prompt-book find <query>` | Search prompts by keyword |
-| `/prompt-book list` | List all saved prompts |
-| `/prompt-book use <id>` | Retrieve and display a prompt |
-| `/prompt-book feedback <id>` | Rate a prompt and add notes |
-| `/prompt-book delete <id>` | Remove a prompt |
+That's it. The `/prompt-book` command is now available in Claude Code.
 
-### Examples
+## Usage
 
 ```
-/prompt-book save
-/prompt-book find "code review"
-/prompt-book list
-/prompt-book list --category coding
-/prompt-book list --tag debugging
-/prompt-book use 20260202-k7xm
-/prompt-book feedback 20260202-k7xm
-/prompt-book delete 20260202-k7xm
+/prompt-book save              # Save a new prompt
+/prompt-book find <query>      # Search by keyword
+/prompt-book list              # Browse all prompts
+/prompt-book use <id>          # Retrieve a prompt
+/prompt-book feedback <id>     # Rate a prompt
+/prompt-book delete <id>       # Remove a prompt
+```
+
+### Quick Example
+
+```
+> /prompt-book save
+What prompt would you like to save?
+> Review this code for security vulnerabilities, focusing on injection attacks and auth issues.
+Title?
+> Security Code Review
+Category?
+> coding
+Tags?
+> security, review
+
+Saved prompt 'Security Code Review' with ID: 20260203-k7xm
+```
+
+Later:
+
+```
+> /prompt-book find security
+Found 1 prompt matching "security":
+
+ID            | Title                 | Category | Rating
+--------------|-----------------------|----------|-------
+20260203-k7xm | Security Code Review  | coding   | 0
 ```
 
 ## Storage
 
-Prompts are stored as markdown files in `~/.claude/skills/prompt-book/data/prompts/`.
+Prompts are stored as markdown files in `data/prompts/`. Each prompt has:
 
-Each file uses YAML frontmatter for metadata:
+- **Title** and **category** for organization
+- **Tags** for searchability
+- **Rating** based on your feedback
+- **Usage count** to see what you actually use
 
-```markdown
----
-id: 20260202-k7xm
-title: "Code Review Request"
-category: coding
-tags: [review, quality]
-rating: 0
-usage_count: 0
-created: 2026-02-02
-last_used: 2026-02-02
----
+## Sync Across Machines
 
-## Prompt
-
-[Your prompt text here]
-
-## Context
-
-[When to use this prompt]
-
-## Feedback
-
-[Rating history added here]
-```
-
-## Backup & Sync
-
-The `data/` directory is initialized as a git repository. To sync across machines:
+Your prompts are just files. Sync them however you like:
 
 ```bash
-cd ~/.claude/skills/prompt-book/data
-git remote add origin <your-repo-url>
-git push -u origin main
+# Option 1: Use this repo's data folder
+cd ~/.claude/skills/prompt-book
+git add data/prompts && git commit -m "Update prompts" && git push
+
+# Option 2: Symlink to your own backup location
+ln -s ~/Dropbox/prompts ~/.claude/skills/prompt-book/data/prompts
 ```
 
-## File Structure
+## Uninstall
 
-```
-~/.claude/skills/prompt-book/
-├── SKILL.md          # Skill definition
-├── README.md         # This file
-└── data/
-    └── prompts/      # Your saved prompts
-        ├── 20260202-k7xm.md
-        └── ...
+```bash
+rm -rf ~/.claude/skills/prompt-book
 ```
 
-## Roadmap
+## License
 
-- **Phase 2:** Usage tracking, feedback command, ratings
-- **Phase 3:** Optional auto-capture with hooks
-- **Phase 4:** Export/import, sharing
+MIT
