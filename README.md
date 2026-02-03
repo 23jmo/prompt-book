@@ -4,6 +4,14 @@ A Claude Code skill for building your personal library of effective prompts. Sav
 
 ## Install
 
+**One-liner:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/23jmo/prompt-book/main/install.sh | bash
+```
+
+**Or with git:**
+
 ```bash
 git clone https://github.com/23jmo/prompt-book.git ~/.claude/skills/prompt-book
 ```
